@@ -4,7 +4,7 @@
 # Environment variables
 # Never commit .env files with secrets
 .env
-
+data/
 
 # Log files
 *.log

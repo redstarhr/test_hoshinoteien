@@ -1,5 +1,4 @@
 // events/interactionCreate.js
-// events/interactionCreate.js
 
 const logger = require('../utils/logger');
 
@@ -48,6 +47,7 @@ module.exports = {
 
     try {
       if (interaction.isChatInputCommand()) {
+        logger.info(`[interactionCreate] ChatInputCommand: ${interaction.commandName} by ${interaction.user.tag}`);
         const command = client.commands.get(interaction.commandName);
         if (!command) {
           if (interaction.replied || interaction.deferred) {
@@ -60,6 +60,7 @@ module.exports = {
         await command.execute(interaction, client);
 
       } else if (interaction.isButton()) {
+        logger.info(`[interactionCreate] Button interaction: ${interaction.customId} by ${interaction.user.tag}`);
         const handler = findComponentHandler(client.buttons, interaction.customId);
         if (!handler) {
           if (interaction.replied || interaction.deferred) {
@@ -71,7 +72,13 @@ module.exports = {
         }
         await handler.execute(interaction, client);
 
-      } else if (interaction.isSelectMenu()) {
+      } else if (
+        interaction.isStringSelectMenu() ||
+        interaction.isUserSelectMenu() ||
+        interaction.isRoleSelectMenu() ||
+        interaction.isMentionableSelectMenu()
+      ) {
+        logger.info(`[interactionCreate] SelectMenu interaction: ${interaction.customId} by ${interaction.user.tag} values: ${interaction.values.join(', ')}`);
         const handler = findComponentHandler(client.selectMenus, interaction.customId);
         if (!handler) {
           if (interaction.replied || interaction.deferred) {
@@ -84,6 +91,7 @@ module.exports = {
         await handler.execute(interaction, client);
 
       } else if (interaction.isModalSubmit()) {
+        logger.info(`[interactionCreate] ModalSubmit interaction: ${interaction.customId} by ${interaction.user.tag}`);
         const handler = findComponentHandler(client.modals, interaction.customId);
         if (!handler) {
           if (interaction.replied || interaction.deferred) {
@@ -94,6 +102,9 @@ module.exports = {
           return;
         }
         await handler.execute(interaction, client);
+
+      } else {
+        logger.info(`[interactionCreate] Unknown interaction type: ${interaction.type}, customId: ${interaction.customId ?? 'N/A'}`);
       }
 
     } catch (error) {

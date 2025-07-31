@@ -6,7 +6,6 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  MessageFlags,
 } = require('discord.js');
 
 module.exports = {
@@ -17,8 +16,10 @@ module.exports = {
 
   async execute(interaction) {
     try {
-      // 応答の準備（ephemeral: true）
-      await interaction.deferReply({ ephemeral: true });
+      // ephemeralを使わず、全員に見えるパネルを送るのでdeferReplyは不要かつ
+      // flags は interaction.reply/editReply のオプションではなく、
+      // reply や editReply のオプションで ephemeral を直接指定する形に統一
+      // ここでは全員に見えるので ephemeral: false（デフォルト）
 
       const embed = new EmbedBuilder()
         .setTitle('🚕 送り人設定パネル')
@@ -45,11 +46,11 @@ module.exports = {
           .setStyle(ButtonStyle.Secondary)
       );
 
-      // 返信編集
-      await interaction.editReply({
+      // 返信（全員に見えるメッセージ）
+      await interaction.reply({
         embeds: [embed],
         components: [row],
-        flags: MessageFlags.Ephemeral,
+        ephemeral: false,  // 明示的に全員に見える設定
       });
 
     } catch (error) {
