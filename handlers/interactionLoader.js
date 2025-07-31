@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const logger = require('../utils/logger');
 
 /**
  * 各モジュールのinteractionsフォルダから
@@ -25,6 +26,8 @@ function loadInteractions(client) {
     modals: client.modals,
   };
 
+  let totalLoaded = 0;
+
   for (const moduleName of botModules) {
     const interactionsPath = path.join(baseDir, moduleName, 'interactions');
     if (!fs.existsSync(interactionsPath)) continue;
@@ -44,15 +47,17 @@ function loadInteractions(client) {
 
           if (
             handler &&
-            typeof handler.customId === 'string' &&
-            typeof handler.handle === 'function'
+            (typeof handler.customId === 'string' || typeof handler.customIdPrefix === 'string') &&
+            typeof handler.execute === 'function'
           ) {
-            if (collection.has(handler.customId)) {
-              console.warn(`⚠️ 重複したカスタムID: ${handler.customId} ファイル: ${filePath}`);
+            const id = handler.customId || handler.customIdPrefix;
+            if (collection.has(id)) {
+              logger.warn(`重複したインタラクションID: ${id} | ファイル: ${filePath}`);
             }
-            collection.set(handler.customId, handler);
+            collection.set(id, handler);
+            totalLoaded++;
           } else {
-            console.warn(`⚠️ 不正なインタラクション定義: ${filePath}`);
+            logger.warn(`⚠️ 不正なインタラクション定義: ${filePath}`);
           }
         } catch (error) {
           console.error(`❌ インタラクション読み込み失敗: ${filePath}`, error);
