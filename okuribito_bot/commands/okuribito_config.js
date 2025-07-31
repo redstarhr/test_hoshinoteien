@@ -20,15 +20,15 @@ module.exports = {
 
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setCustomId('set_okuribito_role')
+        .setCustomId('okuribito_register_role')
         .setLabel('送り人ロール')
         .setStyle(ButtonStyle.Primary),
       new ButtonBuilder()
-        .setCustomId('register_okuribito')
+        .setCustomId('okuribito_register_user')
         .setLabel('送り人登録')
         .setStyle(ButtonStyle.Success),
       new ButtonBuilder()
-        .setCustomId('register_okuribito_shift')
+        .setCustomId('okuribito_register_shift')
         .setLabel('シフト登録')
         .setStyle(ButtonStyle.Secondary)
     );

@@ -1,7 +1,7 @@
 // utils/logger.js
 
-const { Console } = require('console');
-const chalk = require('chalk'); // 色付け用（optional）
+const chalkImport = require('chalk');
+const chalk = chalkImport.default || chalkImport; // v5対応
 
 const logger = {
   info: (message, ...optionalParams) => {

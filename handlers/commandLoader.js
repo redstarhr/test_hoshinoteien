@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const logger = require('../utils/logger');
 
 function loadCommands(client) {
   const botModules = fs.readdirSync(__dirname + '/../', { withFileTypes: true })
@@ -12,7 +13,7 @@ function loadCommands(client) {
       fs.existsSync(path.join(__dirname, '..', name, 'interactions'))
     );
 
-  console.log(`🔄 ${botModules.length}個のモジュールを検出: [${botModules.join(', ')}]`);
+  logger.info(`🔄 ${botModules.length}個のモジュールを検出: [${botModules.join(', ')}]`);
 
   for (const moduleName of botModules) {
     const commandsPath = path.join(__dirname, '..', moduleName, 'commands');
@@ -23,7 +24,7 @@ function loadCommands(client) {
         if (command?.data && command?.execute) {
           client.commands.set(command.data.name, command);
         } else {
-          console.warn(`⚠️ 不正なコマンド: ${file}`);
+          logger.warn(`⚠️ 不正なコマンド: ${file}`);
         }
       }
     }

@@ -31,4 +31,4 @@ jobs:
             --platform managed \
             --region asia-northeast1 \
             --allow-unauthenticated \
-            --set-env-vars GCS_BUCKET_NAME=data-svml
+            --set-env-vars GCS_BUCKET_NAME=data-hoshinokoutei
