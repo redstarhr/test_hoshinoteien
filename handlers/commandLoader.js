@@ -1,11 +1,16 @@
-// handllers/commandLoader.js
+// handlers/commandLoader.js
 
 const fs = require('fs');
 const path = require('path');
 const logger = require('../utils/logger');
 
+/**
+ * 指定されたクライアントに、全Botモジュールのコマンドを読み込む
+ * @param {import('discord.js').Client} client 
+ */
 function loadCommands(client) {
-  const botModules = fs.readdirSync(__dirname + '/../', { withFileTypes: true })
+  // modules一覧（commandsまたはinteractionsディレクトリが存在するもの）
+  const botModules = fs.readdirSync(path.join(__dirname, '..'), { withFileTypes: true })
     .filter(dirent => dirent.isDirectory())
     .map(dirent => dirent.name)
     .filter(name =>
@@ -17,15 +22,22 @@ function loadCommands(client) {
 
   for (const moduleName of botModules) {
     const commandsPath = path.join(__dirname, '..', moduleName, 'commands');
-    if (fs.existsSync(commandsPath)) {
-      const commandFiles = fs.readdirSync(commandsPath).filter(f => f.endsWith('.js'));
-      for (const file of commandFiles) {
-        const command = require(path.join(commandsPath, file));
-        if (command?.data && command?.execute) {
+
+    if (!fs.existsSync(commandsPath)) continue;
+
+    const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+
+    for (const file of commandFiles) {
+      const filePath = path.join(commandsPath, file);
+      try {
+        const command = require(filePath);
+        if (command?.data && typeof command.execute === 'function') {
           client.commands.set(command.data.name, command);
         } else {
-          logger.warn(`⚠️ 不正なコマンド: ${file}`);
+          logger.warn(`⚠️ 無効なコマンド: ${moduleName}/commands/${file}`);
         }
+      } catch (error) {
+        logger.error(`❌ コマンド読み込み失敗: ${moduleName}/commands/${file} - ${error.message}`);
       }
     }
   }

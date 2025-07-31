@@ -1,4 +1,4 @@
-// okuribito_bot/components/buttons/register_user_button.js
+// okuribito_bot/components/buttons/okuribito_user_select.js
 
 const { ActionRowBuilder, UserSelectMenuBuilder } = require('discord.js');
 

@@ -30,9 +30,36 @@ client.buttons = new Collection();
 client.modals = new Collection();
 client.selectMenus = new Collection();
 
-// コマンド・インタラクションを読み込み
+// コマンドを読み込み
 loadCommands(client);
+
+// インタラクションを読み込み（loadInteractions内でclient.buttonsなどにセットされることを想定）
 loadInteractions(client);
+
+// ロード後の各コレクションの状態をログ出力する関数
+function logLoadedInteractions(client) {
+  logger.info('--- 登録済みインタラクション一覧 ---');
+
+  logger.info(`ボタン（buttons）: ${client.buttons.size} 個`);
+  for (const [customId] of client.buttons.entries()) {
+    logger.info(`  - ${customId}`);
+  }
+
+  logger.info(`セレクトメニュー（selectMenus）: ${client.selectMenus.size} 個`);
+  for (const [customId] of client.selectMenus.entries()) {
+    logger.info(`  - ${customId}`);
+  }
+
+  logger.info(`モーダル（modals）: ${client.modals.size} 個`);
+  for (const [customId] of client.modals.entries()) {
+    logger.info(`  - ${customId}`);
+  }
+
+  logger.info('------------------------------------');
+}
+
+// ここでログ出力
+logLoadedInteractions(client);
 
 // イベント読み込み
 const eventsPath = path.join(__dirname, 'events');
@@ -74,3 +101,4 @@ if (fs.existsSync(eventsPath)) {
     process.exit(1);
   }
 })();
+
