@@ -1,0 +1,35 @@
+{
+  "name": "hoshi-no-koutei-bot",
+  "version": "0.1.0",
+  "description": "🌳 星の校庭 🌳 多機能Discord運営支援Bot（出勤管理 / 送り人管理 / 経費申請 など）",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "deploy": "bash ./scripts/deploy-cloud-run.sh"
+  },
+  "author": "redstar (hr) <redstar.hoshir@gmail.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "discord.js": "^14.13.0",
+    "dotenv": "^16.3.1",
+    "@google-cloud/storage": "^7.12.0",
+    "csv-parse": "^5.5.4",
+    "csv-stringify": "^6.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "管理Bot",
+    "出勤管理",
+    "送り人",
+    "Cloud Run",
+    "GCS"
+  ]
+}

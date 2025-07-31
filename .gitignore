@@ -1,0 +1,14 @@
+# Dependencies
+/node_modules
+
+# Environment variables
+# Never commit .env files with secrets
+.env
+
+
+# Log files
+*.log
+npm-debug.log*
+
+# IDE and system files
+.vscode/
