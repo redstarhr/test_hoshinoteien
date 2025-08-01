@@ -1,41 +1,43 @@
-// okuribito_bot/components/buttons/register_role_button.js
-
-const { ActionRowBuilder, RoleSelectMenuBuilder } = require('discord.js');
+// okuribito_bot/components/selects/okuribitoRoleSelect.js
+const { writeJson } = require('../../utils/gcsManager');
+const { getThreadChannel } = require('../../utils/threadHelper');
+const { bold, time } = require('discord.js');
 
 module.exports = {
   customId: 'okuribito_register_role',
+
+  /**
+   * 送り人ロールの選択後の処理
+   * @param {import('discord.js').SelectMenuInteraction} interaction
+   */
   async execute(interaction) {
-    try {
-      const selectMenu = new RoleSelectMenuBuilder()
-        .setCustomId('okuribito_role_select')
-        .setPlaceholder('送り人ロールを選択')
-        .setMinValues(1)
-        .setMaxValues(1);
+    const roleId = interaction.values[0];
+    const guildId = interaction.guildId;
+    const user = interaction.user;
 
-      const row = new ActionRowBuilder().addComponents(selectMenu);
-
+    if (!roleId) {
       await interaction.reply({
-        content: '送り人ロールを選択してください。',
-        components: [row],
-        flags: 64, // ephemeral対応
+        content: 'ロールが選択されていません。',
+        flags: 1 << 6 // ephemeral
       });
-    } catch (error) {
-      console.error('【エラー】送り人ロール選択メニューの表示に失敗しました:', error);
-      try {
-        if (interaction.replied || interaction.deferred) {
-          await interaction.followUp({
-            content: '⚠️ 送り人ロール選択メニューの表示中にエラーが発生しました。',
-            ephemeral: true,
-          });
-        } else {
-          await interaction.reply({
-            content: '⚠️ 送り人ロール選択メニューの表示中にエラーが発生しました。',
-            ephemeral: true,
-          });
-        }
-      } catch (replyError) {
-        console.error('【エラー】エラー通知の送信にも失敗しました:', replyError);
-      }
+      return;
     }
-  },
+
+    // GCSへ保存
+    const configPath = `data-svml/${guildId}/okuribito/config.json`;
+    await writeJson(configPath, { roleId });
+
+    // ログスレッド取得
+    const thread = await getThreadChannel(interaction.guild, '送り設定');
+    if (thread) {
+      const now = new Date();
+      const log = `✅ ${time(now, 't')} ${bold(user.username)} が送り人ロールを <@&${roleId}> に設定しました。`;
+      await thread.send(log);
+    }
+
+    await interaction.reply({
+      content: `送り人ロールを <@&${roleId}> に設定しました。`,
+      flags: 1 << 6 // ephemeral
+    });
+  }
 };

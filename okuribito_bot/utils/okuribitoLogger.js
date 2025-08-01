@@ -1,59 +1,57 @@
-// okuribito_bot/utils/okuribitoLogger.js
+const { ChannelType } = require('discord.js');
+const logger = require('./logger');
 
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const THREAD_NAME = '送り設定';
 
 /**
- * 送迎ログをスレッド付きで送信
- * @param {import('discord.js').TextChannel} logChannel - ログ用テキストチャンネル
- * @param {object} logData - ログ情報 { user, okuribitoUser, count, datetime, note }
- * @param {import('discord.js').Client} client
+ * ギルド内のログ用スレッドを取得または作成します。
+ * @param {import('discord.js').Guild} guild
+ * @returns {Promise<import('discord.js').ThreadChannel|null>}
  */
-async function postOkuribitoLog(logChannel, logData, client) {
-  const { user, okuribitoUser, count, datetime, note } = logData;
+async function getLogThread(guild) {
+    // アクティブなスレッドから探す
+    const activeThreads = await guild.threads.fetchActive();
+    let thread = activeThreads.threads.find(t => t.name === THREAD_NAME && !t.archived);
 
-  // 🔍 スレッド検索 or 作成
-  const threadName = '送り設定';
-  let thread = (await logChannel.threads.fetchActive()).threads.find(t => t.name === threadName);
+    if (thread) return thread;
 
-  if (!thread) {
-    const starterMessage = await logChannel.send('🚕 ログスレッドを作成します...');
-    thread = await starterMessage.startThread({
-      name: threadName,
-      autoArchiveDuration: 1440, // 24時間
-    });
-  }
+    // アーカイブされたスレッドから探す
+    const archivedThreads = await guild.threads.fetchArchived();
+    thread = archivedThreads.threads.find(t => t.name === THREAD_NAME);
+    if (thread) {
+        await thread.setArchived(false).catch(e => logger.error('Failed to unarchive log thread', e));
+        return thread;
+    }
 
-  // 📦 Embed生成
-  const embed = new EmbedBuilder()
-    .setTitle('🚕 送ります 🚕')
-    .addFields(
-      { name: '入力者', value: `<@${user.id}>`, inline: true },
-      { name: '送り人', value: `<@${okuribitoUser.id}>`, inline: true },
-      { name: '人数', value: `${count}`, inline: true },
-      { name: '日時', value: datetime, inline: false }
-    )
-    .setColor(0x0099ff)
-    .setTimestamp();
-
-  if (note) {
-    embed.addFields({ name: '備考', value: note });
-  }
-
-  // 🧩 ボタン
-  const completeButton = new ButtonBuilder()
-    .setCustomId('mark_complete_button')
-    .setLabel('完了')
-    .setStyle(ButtonStyle.Success);
-
-  const noteButton = new ButtonBuilder()
-    .setCustomId('add_note_button')
-    .setLabel('備考')
-    .setStyle(ButtonStyle.Secondary);
-
-  const row = new ActionRowBuilder().addComponents(completeButton, noteButton);
-
-  // 📝 スレッドに送信
-  return await thread.send({ embeds: [embed], components: [row] });
+    // 見つからなければ作成する (システムチャンネル or 特定のチャンネル)
+    const channel = guild.systemChannel; // ここは必要に応じて設定ファイルから読み込むように変更できます
+    if (!channel || channel.type !== ChannelType.GuildText) {
+        logger.warn(`Guild ${guild.id} has no suitable channel to create the log thread in.`);
+        return null;
+    }
+    try {
+        thread = await channel.threads.create({
+            name: THREAD_NAME,
+            autoArchiveDuration: 10080, // 1 week
+            reason: '送り人BOTのログ用スレッド',
+        });
+        await thread.send({ content: 'このスレッドは送り人BOTの各種設定ログを記録します。' });
+        return thread;
+    } catch (error) {
+        logger.error(`Could not create log thread in guild ${guild.id}`, error);
+        return null;
+    }
 }
 
-module.exports = { postOkuribitoLog };
+async function logToThread(guild, embed) {
+    const thread = await getLogThread(guild);
+    if (thread) {
+        try {
+            await thread.send({ embeds: [embed] });
+        } catch (error) {
+            logger.error(`Failed to send log to thread in guild ${guild.id}`, error);
+        }
+    }
+}
+
+module.exports = { logToThread };

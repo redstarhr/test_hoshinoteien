@@ -1,41 +1,59 @@
-// okuribito_bot/components/buttons/register_role_button.js
-
-const { ActionRowBuilder, RoleSelectMenuBuilder } = require('discord.js');
+const { RoleSelectMenuInteraction, EmbedBuilder } = require('discord.js');
+const { loadOkuribitoConfig, saveOkuribitoConfig } = require('../../utils/okuribitoConfigManager');
+const { logToThread } = require('../../utils/okuribitoLogger');
+const logger = require('../../utils/logger');
 
 module.exports = {
-  customId: 'okuribito_register_role',
+  customId: 'okuribito_role_select',
+  /**
+   * @param {RoleSelectMenuInteraction} interaction
+   */
   async execute(interaction) {
-    try {
-      const selectMenu = new RoleSelectMenuBuilder()
-        .setCustomId('okuribito_role_select')
-        .setPlaceholder('送り人ロールを選択')
-        .setMinValues(1)
-        .setMaxValues(1);
+    await interaction.deferReply({ ephemeral: true });
 
-      const row = new ActionRowBuilder().addComponents(selectMenu);
+    const roleId = interaction.values[0];
+    const guildId = interaction.guild.id;
+    const role = await interaction.guild.roles.fetch(roleId);
 
-      await interaction.reply({
-        content: '送り人ロールを選択してください。',
-        components: [row],
-        flags: 64, // ephemeral対応
+    if (!role) {
+      logger.warn(`Failed to fetch role ${roleId} in guild ${guildId}`);
+      return interaction.editReply({
+        content: 'ロールの取得に失敗しました。もう一度お試しください。',
       });
+    }
+
+    try {
+      const currentConfig = await loadOkuribitoConfig(guildId) || {};
+      const newConfig = {
+        ...currentConfig,
+        okuribitoRoleId: roleId,
+      };
+
+      await saveOkuribitoConfig(guildId, newConfig);
+
+      const logEmbed = new EmbedBuilder()
+        .setTitle('🚕 送り人ロール設定')
+        .setColor('#5865F2')
+        .addFields(
+          { name: '設定者', value: `${interaction.user}`, inline: true },
+          { name: '入力年月日時間', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: true },
+          { name: '送り人ロール', value: `${role}`, inline: false }
+        )
+        .setTimestamp();
+      await logToThread(interaction.guild, logEmbed);
+
+      const replyEmbed = new EmbedBuilder()
+        .setColor('#5865F2')
+        .setTitle('✅ 設定完了')
+        .setDescription(`送り人ロールを **${role.name}** に設定しました。`)
+        .setTimestamp();
+
+      await interaction.editReply({ embeds: [replyEmbed] });
     } catch (error) {
-      console.error('【エラー】送り人ロール選択メニューの表示に失敗しました:', error);
-      try {
-        if (interaction.replied || interaction.deferred) {
-          await interaction.followUp({
-            content: '⚠️ 送り人ロール選択メニューの表示中にエラーが発生しました。',
-            ephemeral: true,
-          });
-        } else {
-          await interaction.reply({
-            content: '⚠️ 送り人ロール選択メニューの表示中にエラーが発生しました。',
-            ephemeral: true,
-          });
-        }
-      } catch (replyError) {
-        console.error('【エラー】エラー通知の送信にも失敗しました:', replyError);
-      }
+      logger.error({ message: `GCSへのファイル保存中にエラーが発生しました (Guild ID: ${guildId})`, error });
+      await interaction.editReply({
+        content: 'エラーが発生し、ロール設定を保存できませんでした。',
+      });
     }
   },
 };
