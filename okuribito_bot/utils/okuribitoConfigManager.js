@@ -1,6 +1,6 @@
 // utils/okuribitoConfigManager.js
 const { Storage } = require('@google-cloud/storage');
-const logger = require('./logger');
+const logger = require('./logger'); // パスを修正
 
 const storage = new Storage();
 // .envファイルからGCSのバケット名を読み込みます

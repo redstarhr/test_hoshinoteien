@@ -1,5 +1,5 @@
 const { ChannelType } = require('discord.js');
-const logger = require('./logger');
+const logger = require('./logger'); // パスを修正
 
 const THREAD_NAME = '送り設定';
 
