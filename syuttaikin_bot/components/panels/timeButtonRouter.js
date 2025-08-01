@@ -1,3 +1,5 @@
+// syuttaikin_bot/components/panels/timeButtonRouter.js
+
 const logger = require('@common/logger');
 const { readState } = require('../utils/syuttaikinStateManager');
 const { EmbedBuilder } = require('discord.js');

@@ -1,6 +1,7 @@
 const { ButtonInteraction, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
 const { loadOkuribitoConfig } = require('../../utils/okuribitoConfigManager');
-const logger = require('../../utils/logger');
+const logger = require('../../../utils/logger');
+const { handleInteractionError } = require('../../../handlers/interactionErrorHandler');
 
 module.exports = {
     customId: 'okuribito_config_shift',
@@ -46,8 +47,7 @@ module.exports = {
             await interaction.editReply({ content: 'シフトを登録するユーザーを選択してください。', components: [row] });
 
         } catch (error) {
-            logger.error({ message: 'シフト登録メニューの表示に失敗しました:', error });
-            await interaction.editReply({ content: '⚠️ メニューの表示中にエラーが発生しました。' });
+            await handleInteractionError(interaction, error, 'シフト登録メニューの表示に失敗しました', 'メニューの表示中にエラーが発生しました。');
         }
     },
 };

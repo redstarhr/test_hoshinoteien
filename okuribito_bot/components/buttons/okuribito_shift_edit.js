@@ -1,6 +1,7 @@
 const { ButtonInteraction, ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
-const { loadOkuribitoConfig } = require('../../utils/okuribitoConfigManager');
-const logger = require('../../utils/logger');
+const { loadOkuribitoConfig } = require('../../../utils/okuribitoConfigManager');
+const logger = require('../../../utils/logger');
+const { handleInteractionError } = require('../../../handlers/interactionErrorHandler');
 
 module.exports = {
     customId: 'okuribito_shift_edit',
@@ -46,8 +47,7 @@ module.exports = {
 
             await interaction.showModal(modal);
         } catch (error) {
-            logger.error({ message: 'シフト編集モーダルの表示に失敗しました:', error });
-            await interaction.reply({ content: 'エラーが発生し、編集画面を開けませんでした。', ephemeral: true }).catch(() => {});
+            await handleInteractionError(interaction, error, 'シフト編集モーダルの表示に失敗しました', 'エラーが発生し、編集画面を開けませんでした。');
         }
     },
 };

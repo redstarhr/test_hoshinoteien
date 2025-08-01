@@ -1,8 +1,9 @@
 const { ButtonInteraction, EmbedBuilder } = require('discord.js');
-const { loadOkuribitoConfig, saveOkuribitoConfig } = require('../../utils/okuribitoConfigManager');
-const { logToThread } = require('../../utils/okuribitoLogger');
-const { updateLivePanel } = require('../../utils/panelUpdater');
-const logger = require('../../utils/logger');
+const { loadOkuribitoConfig, saveOkuribitoConfig } = require('../../../utils/okuribitoConfigManager');
+const { logToThread } = require('../../../utils/okuribitoLogger');
+const { updateLivePanel } = require('../../../utils/panelUpdater');
+const logger = require('../../../utils/logger');
+const { handleInteractionError } = require('../../../handlers/interactionErrorHandler');
 
 module.exports = {
     customId: 'okuribito_shift_delete',
@@ -46,8 +47,7 @@ module.exports = {
             await updateLivePanel(interaction.client, interaction.guild.id);
 
         } catch (error) {
-            logger.error({ message: 'シフト削除処理中にエラーが発生しました:', error });
-            await interaction.editReply({ content: '⚠️ エラーが発生しました。', ephemeral: true });
+            await handleInteractionError(interaction, error, 'シフト削除処理中にエラーが発生しました');
         }
     },
 };

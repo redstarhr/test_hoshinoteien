@@ -1,5 +1,6 @@
 const { ButtonInteraction, EmbedBuilder, ActionRowBuilder, ButtonBuilder } = require('discord.js');
-const logger = require('../../utils/logger');
+const logger = require('../../../utils/logger');
+const { handleInteractionError } = require('../../../handlers/interactionErrorHandler');
 
 module.exports = {
     // The customId is dynamic (e.g., okuribito_send_complete:messageId), so we use a startsWith check
@@ -16,7 +17,7 @@ module.exports = {
             const originalEmbed = originalMessage.embeds[0];
 
             if (!originalEmbed) {
-                return interaction.followUp({ content: '元の埋め込みメッセージが見つかりませんでした。', ephemeral: true });
+                return interaction.followUp({ content: '元の埋め込みメッセージが見つかりませんでした。', ephemeral: true }).catch(() => {});
             }
 
             // Create a new embed based on the old one with updated title and color
@@ -31,9 +32,7 @@ module.exports = {
             await originalMessage.edit({ embeds: [completedEmbed], components: [disabledButtons] });
 
         } catch (error) {
-            logger.error({ message: '送迎完了処理中にエラーが発生しました:', error });
-            // Since we deferred, we use followUp for any error messages
-            await interaction.followUp({ content: 'エラーが発生し、完了処理を実行できませんでした。', ephemeral: true });
+            await handleInteractionError(interaction, error, '送迎完了処理中にエラーが発生しました', 'エラーが発生し、完了処理を実行できませんでした。');
         }
     },
 };

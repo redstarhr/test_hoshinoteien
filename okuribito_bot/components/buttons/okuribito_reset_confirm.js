@@ -1,7 +1,8 @@
 const { ButtonInteraction, EmbedBuilder } = require('discord.js');
-const { loadOkuribitoConfig, deleteOkuribitoConfig } = require('../../utils/okuribitoConfigManager');
-const { logToThread } = require('../../utils/okuribitoLogger');
-const logger = require('../../utils/logger');
+const { loadOkuribitoConfig, deleteOkuribitoConfig } = require('../../../utils/okuribitoConfigManager');
+const { logToThread } = require('../../../utils/okuribitoLogger');
+const logger = require('../../../utils/logger');
+const { handleInteractionError } = require('../../../handlers/interactionErrorHandler');
 
 module.exports = {
     customId: 'okuribito_reset_confirm',
@@ -41,8 +42,7 @@ module.exports = {
             await interaction.editReply({ content: '✅ すべての設定をリセットしました。', components: [] });
 
         } catch (error) {
-            logger.error({ message: '設定リセット処理中にエラーが発生しました:', error });
-            await interaction.editReply({ content: '⚠️ エラーが発生し、リセット処理を完了できませんでした。' });
+            await handleInteractionError(interaction, error, '設定リセット処理中にエラーが発生しました', 'エラーが発生し、リセット処理を完了できませんでした。');
         }
     },
 };

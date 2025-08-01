@@ -1,4 +1,4 @@
-const { handleRemoveTimeSelect } = require('./_handleRemoveTimeSelect');
+const { handleRemoveTimeSelect } = require('../../utils/handleRemoveTimeSelect');
 
 module.exports = {
     customId: 'setting_remove_arrival_time',

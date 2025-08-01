@@ -1,6 +1,6 @@
 // syuttaiki_bot/commands/cast-settings.js
 const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags } = require('discord.js');
-const { updateSettingsMessage } = require('../components/settings/_updateSettingsMessage');
+const { updateSettingsMessage } = require('../utils/updateSettingsMessage');
 
 module.exports = {
   data: new SlashCommandBuilder()

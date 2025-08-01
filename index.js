@@ -9,6 +9,7 @@ const logger = require('./utils/logger');
 // コマンド・インタラクション読み込み関数を別ファイルにまとめているならここで読み込み
 const { loadCommands } = require('./handlers/commandLoader');
 const { loadInteractions } = require('./handlers/interactionLoader');
+const { initializeGCS } = require('./utils/gcsClient');
 
 // devcmd.jsからコマンド登録関数をインポート
 const { registerCommands } = require('./scripts/devcmd'); // パスは適宜調整
@@ -92,6 +93,8 @@ if (fs.existsSync(eventsPath)) {
 // Discordログイン＆起動処理
 (async () => {
   try {
+    await initializeGCS(); // GCSクライアントを初期化
+
     await registerCommands(); // 起動時にスラッシュコマンド登録を実行
 
     await client.login(process.env.DISCORD_TOKEN);
@@ -101,4 +104,3 @@ if (fs.existsSync(eventsPath)) {
     process.exit(1);
   }
 })();
-

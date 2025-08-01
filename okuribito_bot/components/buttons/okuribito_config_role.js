@@ -1,6 +1,7 @@
 const { ActionRowBuilder, RoleSelectMenuBuilder, ButtonInteraction, EmbedBuilder } = require('discord.js');
 const { loadOkuribitoConfig } = require('../../utils/okuribitoConfigManager');
-const logger = require('../../utils/logger');
+const logger = require('../../../utils/logger');
+const { handleInteractionError } = require('../../../handlers/interactionErrorHandler');
 
 module.exports = {
   customId: 'okuribito_config_role', // パネルのボタンIDと一致させます
@@ -38,8 +39,7 @@ module.exports = {
 
       await interaction.editReply({ embeds: [embed], components: [row] });
     } catch (error) {
-      logger.error({ message: '送り人ロール選択メニューの表示に失敗しました:', error });
-      await interaction.editReply({ content: '⚠️ メニューの表示中にエラーが発生しました。', embeds: [], components: [] });
+      await handleInteractionError(interaction, error, '送り人ロール選択メニューの表示に失敗しました', 'メニューの表示中にエラーが発生しました。');
     }
   },
 };

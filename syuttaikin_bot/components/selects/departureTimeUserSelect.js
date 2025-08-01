@@ -2,7 +2,7 @@ const { ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = req
 
 module.exports = {
   customId: 'departure_time_user_select',
-  handle: async (interaction) => {
+  async execute(interaction) {
     const selectedUsers = interaction.values; // ユーザーIDの配列
     const time = interaction.customId.split(':')[1];
 

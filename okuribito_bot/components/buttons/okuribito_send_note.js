@@ -1,5 +1,6 @@
 const { ButtonInteraction, ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
-const logger = require('../../utils/logger');
+const logger = require('../../../utils/logger');
+const { handleInteractionError } = require('../../../handlers/interactionErrorHandler');
 
 module.exports = {
     // The customId is dynamic
@@ -25,7 +26,7 @@ module.exports = {
 
             await interaction.showModal(modal);
         } catch (error) {
-            logger.error({ message: '備考入力モーダルの表示に失敗しました:', error });
+            await handleInteractionError(interaction, error, '備考入力モーダルの表示に失敗しました', '備考入力画面を開けませんでした。');
         }
     },
 };

@@ -3,7 +3,7 @@ const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = req
 
 module.exports = {
   customId: 'arrival_time_register_modal',
-  async handle(interaction) {
+  async execute(interaction) {
     const modal = new ModalBuilder()
       .setCustomId('arrival_time_register_submit')
       .setTitle('出勤時間登録');

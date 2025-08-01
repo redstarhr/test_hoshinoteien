@@ -1,21 +1,10 @@
-const { readJsonFromGCS, saveJsonToGCS } = require('@common/gcs/gcsUtils');
-const logger = require('@common/logger');
+const { getGCSClient, isGCSConnected } = require('../../utils/gcsClient');
+const logger = require('../../utils/logger');
 
-const STATE_FILE_PATH = (guildId) => `data-svml/${guildId}/syuttaikin/state.json`;
+const BUCKET_NAME = process.env.GCS_BUCKET_NAME;
+const FILE_PATH_PREFIX = 'syuttaikin_bot/state';
 
-const defaultState = {
-  syuttaikin: {
-    panelChannelId: null,
-    logChannelId: null,
-    castRoles: [], // This should be an array of role IDs
-    arrivalTimes: [],
-    departureTimes: [],
-    // The following are transient daily data, might be better to store separately
-    // but for now, let's keep them here. They should be cleared daily.
-    arrivals: {}, // { "20:00": [userId1, userId2], ... }
-    departures: {}, // { "21:00": [userId1, userId2], ... }
-  },
-};
+const getStateFilePath = (guildId) => `${FILE_PATH_PREFIX}/${guildId}_config.json`;
 
 /**
  * Reads the state from GCS and merges it with the default state.
@@ -23,34 +12,24 @@ const defaultState = {
  * @returns {Promise<object>} The state object.
  */
 async function readState(guildId) {
-  try {
-    const savedState = await readJsonFromGCS(STATE_FILE_PATH(guildId));
-    return {
-      ...defaultState,
-      ...savedState,
-      syuttaikin: {
-        ...defaultState.syuttaikin,
-        ...(savedState?.syuttaikin || {}),
-      },
-    };
-  } catch (error) {
-    if (error.code === 404) {
-      logger.info(`[StateManager] No state file found for guild ${guildId}. Returning default state.`);
-      return JSON.parse(JSON.stringify(defaultState)); // Return a deep copy
+    if (!isGCSConnected()) {
+        logger.warn('[GCS] GCS未接続のため、空の設定を返します。');
+        return {};
     }
-    logger.error(`[StateManager] Failed to read state for guild ${guildId}`, { error });
-    // In case of other errors, return default state to prevent crashes
-    return JSON.parse(JSON.stringify(defaultState)); // Return a deep copy
-  }
-}
+    const storage = getGCSClient();
+    const file = storage.bucket(BUCKET_NAME).file(getStateFilePath(guildId));
 
-/**
- * Writes the state to GCS.
- * @param {string} guildId The ID of the guild.
- * @param {object} state The state object to write.
- */
-async function writeState(guildId, state) {
-  await saveJsonToGCS(STATE_FILE_PATH(guildId), state);
+    try {
+        const [data] = await file.download();
+        return JSON.parse(data.toString('utf8'));
+    } catch (error) {
+        if (error.code === 404) {
+            logger.info(`[syuttaikin] Guild ${guildId} の設定ファイルが見つかりませんでした。新規作成します。`);
+            return {};
+        }
+        logger.error(`[syuttaikin] Guild ${guildId} の設定ファイル読み込みに失敗しました。`, { error });
+        throw error;
+    }
 }
 
 /**
@@ -60,9 +39,23 @@ async function writeState(guildId, state) {
  * @param {(currentState: object) => object} updateFn A function that takes the current state and returns the new state.
  */
 async function updateState(guildId, updateFn) {
-  const currentState = await readState(guildId);
-  const newState = updateFn(currentState);
-  await writeState(guildId, newState);
+    if (!isGCSConnected()) {
+        logger.error('[GCS] GCS未接続のため、設定を更新できません。');
+        throw new Error('GCS is not connected.');
+    }
+    const storage = getGCSClient();
+    const file = storage.bucket(BUCKET_NAME).file(getStateFilePath(guildId));
+
+    try {
+        const currentState = await readState(guildId);
+        const newState = updateFn(currentState);
+        await file.save(JSON.stringify(newState, null, 2), {
+            contentType: 'application/json',
+        });
+    } catch (error) {
+        logger.error(`[syuttaikin] Guild ${guildId} の設定ファイル更新に失敗しました。`, { error });
+        throw error;
+    }
 }
 
-module.exports = { readState, writeState, updateState, defaultState };
+module.exports = { readState, updateState };

@@ -1,7 +1,7 @@
 const { PermissionFlagsBits } = require('discord.js');
-const { updateState } = require('@root/syuttaikin_bot/utils/syuttaikinStateManager');
-const { updateSettingsMessage } = require('@root/syuttaikin_bot/components/settings/_updateSettingsMessage');
-const logger = require('@common/logger');
+const { updateState } = require('../../utils/syuttaikinStateManager');
+const { updateSettingsMessage } = require('../../utils/updateSettingsMessage');
+const logger = require('../../../utils/logger');
 
 module.exports = {
   customId: 'notify_log_channel_select',

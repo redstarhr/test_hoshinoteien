@@ -1,5 +1,5 @@
-const logger = require('@common/logger');
-const { updateState } = require('../../../utils/syuttaikinStateManager');
+const logger = require('../../../utils/logger');
+const { updateState } = require('../../utils/syuttaikinStateManager');
 
 /**
  * 時間登録モーダルの共通処理

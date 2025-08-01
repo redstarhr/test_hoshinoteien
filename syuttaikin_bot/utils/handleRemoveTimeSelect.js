@@ -1,7 +1,7 @@
-const { handleInteractionError } = require('../../../handlers/interactionErrorHandler');
-const configManager = require('../../../utils/configManager'); // 仮のパス
+const { handleInteractionError } = require('../../handlers/interactionErrorHandler');
+const configManager = require('../../../utils/configManager');
 const logger = require('../../../utils/logger');
-const { updateSettingsMessage } = require('./_updateSettingsMessage'); // 仮のパス
+const { updateSettingsMessage } = require('./updateSettingsMessage');
 
 /**
  * 時間削除セレクトメニューの選択を処理する共通関数

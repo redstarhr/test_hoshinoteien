@@ -1,6 +1,7 @@
 const { ButtonInteraction, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
-const { loadOkuribitoConfig } = require('../../utils/okuribitoConfigManager');
-const logger = require('../../utils/logger');
+const { loadOkuribitoConfig } = require('../../../utils/okuribitoConfigManager');
+const logger = require('../../../utils/logger');
+const { handleInteractionError } = require('../../../handlers/interactionErrorHandler');
 
 module.exports = {
     customId: 'okuribito_send_start',
@@ -55,8 +56,7 @@ module.exports = {
             await interaction.editReply({ content: 'ステップ1: 送り人を選択してください。', components: [row], ephemeral: true });
 
         } catch (error) {
-            logger.error({ message: '「送ります」ボタンの処理中にエラーが発生しました:', error });
-            await interaction.editReply({ content: '⚠️ エラーが発生しました。', ephemeral: true });
+            await handleInteractionError(interaction, error, '「送ります」ボタンの処理中にエラーが発生しました');
         }
     },
 };

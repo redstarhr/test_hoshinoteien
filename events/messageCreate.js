@@ -1,5 +1,5 @@
 // events/messageCreate.js
-const logger = require('../okuribito_bot/utils/logger');
+const logger = require('../utils/logger');
 const { handleGptChat } = require('../chat_gpt_bot/utils/chatHandler');
 
 
